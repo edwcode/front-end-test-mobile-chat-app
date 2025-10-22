@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FlatList, StyleSheet, Pressable, Modal } from 'react-native';
-import { useAppContext } from '@/hooks/AppContext';
+import { useCurrentUser, useUsers, useChats, useChatActions } from '@/contexts/AppProvider';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { ChatListItem } from '@/components/ChatListItem';
@@ -8,7 +8,12 @@ import { UserListItem } from '@/components/UserListItem';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 
 export default function ChatsScreen() {
-  const { currentUser, users, chats, createChat } = useAppContext();
+  // componente solo se re-renderiza si cambian ESTOS valores
+  const currentUser = useCurrentUser(); // Solo usuario actual
+  const users = useUsers(); // Solo lista de usuarios
+  const chats = useChats(); // Solo lista de chats
+  const { createChat } = useChatActions(); // Solo acción de crear
+  
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
 

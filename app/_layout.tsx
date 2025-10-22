@@ -7,7 +7,8 @@ import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { AppProvider, useAppContext } from '@/hooks/AppContext';
+import { useMediaCleanup } from '@/hooks/useMediaCleanup';
+import { AppProvider, useIsLoggedIn } from '@/contexts/AppProvider';
 import { DrizzleStudioDevTool } from '@/database/DrizzleStudio';
 
 SplashScreen.preventAutoHideAsync();
@@ -32,7 +33,17 @@ function useProtectedRoute(isLoggedIn: boolean, loading: boolean) {
 }
 
 function RootLayoutNav() {
-  const { isLoggedIn, loading } = useAppContext();
+  // Hook optimizado que solo suscribe a isLoggedIn
+  // No se re-renderiza cuando cambia users, chats, etc
+  const isLoggedIn = useIsLoggedIn();
+  const loading = false; // DatabaseProvider ya maneja loading state
+
+  // Limpieza automática de multimedia
+  useMediaCleanup({
+    cleanupIntervalMinutes: 15, // Cada 15 minutos
+    cleanOnBackground: true,     // Al pasar a background
+    checkHealth: true,           // Monitorear salud del caché
+  });
 
   // Call the hook unconditionally
   useProtectedRoute(isLoggedIn, loading);

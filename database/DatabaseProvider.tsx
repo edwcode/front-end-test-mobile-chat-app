@@ -2,6 +2,7 @@ import React, { createContext, useState, useEffect, useContext, ReactNode } from
 import { Text, View, ActivityIndicator, StyleSheet } from 'react-native';
 import { initializeDatabase } from './db';
 import { seedDatabase } from './seed';
+import { runMigrations } from './migrate';
 
 interface DatabaseContextType {
   isInitialized: boolean;
@@ -33,6 +34,8 @@ export function DatabaseProvider({ children }: DatabaseProviderProps) {
         // Initialize the database schema
         await initializeDatabase();
         console.log('Database initialized');
+      
+        await runMigrations();
         
         // Seed the database with initial data
         await seedDatabase();

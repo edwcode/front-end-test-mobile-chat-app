@@ -17,8 +17,8 @@ export function ChatListItem({ chat, currentUserId, users }: ChatListItemProps) 
   
   const otherParticipants = useMemo(() => {
     return chat.participants
-      .filter(id => id !== currentUserId)
-      .map(id => users.find(user => user.id === id))
+      .filter((id: string) => id !== currentUserId)
+      .map((id: string) => users.find(user => user.id === id))
       .filter(Boolean) as User[];
   }, [chat.participants, currentUserId, users]);
 
@@ -55,6 +55,7 @@ export function ChatListItem({ chat, currentUserId, users }: ChatListItemProps) 
   }, [chat.lastMessage]);
 
   const isCurrentUserLastSender = chat.lastMessage?.senderId === currentUserId;
+  const hasUnread = (chat.unreadCount ?? 0) > 0;
 
   return (
     <Pressable style={styles.container} onPress={handlePress}>
@@ -77,11 +78,19 @@ export function ChatListItem({ chat, currentUserId, users }: ChatListItemProps) 
               numberOfLines={1}
               style={[
                 styles.lastMessage,
-                isCurrentUserLastSender && styles.currentUserMessage
+                isCurrentUserLastSender && styles.currentUserMessage,
+                hasUnread && styles.unreadMessage, // Bold si hay no leídos
               ]}
             >
               {isCurrentUserLastSender && 'You: '}{chat.lastMessage.text}
             </ThemedText>
+          )}
+          {hasUnread && (
+            <View style={styles.unreadBadge}>
+              <ThemedText style={styles.unreadBadgeText}>
+                {chat.unreadCount}
+              </ThemedText>
+            </View>
           )}
         </View>
       </View>
@@ -127,5 +136,24 @@ const styles = StyleSheet.create({
   },
   currentUserMessage: {
     fontStyle: 'italic',
+  },
+  unreadMessage: {
+    fontWeight: '600',
+    color: '#000000',
+  },
+  unreadBadge: {
+    backgroundColor: '#007AFF',
+    borderRadius: 12,
+    minWidth: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 6,
+    marginLeft: 8,
+  },
+  unreadBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '600',
   },
 }); 

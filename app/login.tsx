@@ -2,17 +2,21 @@ import React from 'react';
 import { StyleSheet, FlatList, SafeAreaView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useAppContext } from '@/hooks/AppContext';
+import { useUsers } from '@/contexts/AppProvider';
+import { useUserContext } from '@/contexts/AppProvider';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { UserListItem } from '@/components/UserListItem';
 
 export default function LoginScreen() {
-  const { users, login } = useAppContext();
+  // ✅ NUEVO: Hooks granulares - solo lo necesario
+  const users = useUsers(); // Solo lista de usuarios
+  const { login } = useUserContext(); // Solo acción de login
   const router = useRouter();
 
-  const handleUserSelect = (userId: string) => {
-    if (login(userId)) {
+  const handleUserSelect = async (userId: string) => {
+    const success = await login(userId);
+    if (success) {
       router.replace('/(tabs)');
     }
   };

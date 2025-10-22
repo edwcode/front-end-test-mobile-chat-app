@@ -41,22 +41,22 @@ Please make sure to **document your task selection, implementation details, and 
 
 ### Performance Improvements (extra points for anything regarding data management improvement since this is a offline first app and its important to use the localDb wisely)
 
-- [ ] Optimize message list rendering with virtualization
-- [ ] Add pagination for loading older messages
-- [ ] Optimize database queries and state management
-- [ ] Implement proper memory management for media content
+- [x] Optimize message list rendering with virtualization ✅ **COMPLETED**
+- [x] Add pagination for loading older messages ✅ **COMPLETED** (50 messages per page)
+- [x] Optimize database queries and state management ✅ **COMPLETED** (JOINs, batch queries, useReducer)
+- [x] Implement proper memory management for media content ✅ **COMPLETED** (LRU cache, 100MB limit, auto-cleanup)
 
 ### Feature Additions (rmember, we encourgae you to tackle just some challinging features instead of lots os easy ones, choose the difficult over easy the easy ones also to better showcase your skills)
 
-- [ ] Add media sharing capabilities (photos preferably, with a optimized/compressed preview instead of the original image)
-- [ ] Add read receipts for messages along with status indicators (sent, read)
-- [ ] Add message deletion and editing
-- [ ] Implement message search functionality
+- [x] Add media sharing capabilities (photos preferably, with a optimized/compressed preview instead of the original image) ✅ **COMPLETED** (adaptive compression 50-80%)
+- [x] Add read receipts for messages along with status indicators (sent, read) ✅ **COMPLETED** (sent/delivered/read with visual indicators)
+- [x] Add message deletion and editing ✅ **COMPLETED** (soft delete, edit history, context menu)
+- [x] Implement message search functionality ✅ **COMPLETED** (debounce, cache, filters, highlighting)
 
 ### Bug Fixes
 
-- [ ] Fix message ordering in chat rooms (newest messages should appear at the bottom, next to the input box)
-- [ ] Resolve keyboard or other components overlap issues on different device sizes
+- [x] Fix message ordering in chat rooms (newest messages should appear at the bottom, next to the input box) ✅ **COMPLETED** (FlashList inverted + timestamp sort)
+- [x] Resolve keyboard or other components overlap issues on different device sizes ✅ **COMPLETED** (Dynamic KeyboardAvoidingView + SafeAreaView + listeners)
 
 ## Assessment Criteria
 

@@ -1,14 +1,16 @@
 import React from 'react';
 import { StyleSheet, Pressable, SafeAreaView } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useAppContext } from '@/hooks/AppContext';
+import { useCurrentUser, useUserContext } from '@/contexts/AppProvider';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { Avatar } from '@/components/Avatar';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 
 export default function ProfileScreen() {
-  const { currentUser, logout } = useAppContext();
+  //  solo lo necesario para profile
+  const currentUser = useCurrentUser(); // Solo usuario actual
+  const { logout } = useUserContext(); // Solo acción de logout
   const router = useRouter();
 
   const handleLogout = () => {
