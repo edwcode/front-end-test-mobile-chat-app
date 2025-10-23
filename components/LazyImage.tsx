@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Image, View, StyleSheet, ActivityIndicator, ImageProps, ViewStyle } from 'react-native';
-import { MediaCacheManager } from '@/utils/MediaCacheManager';
 
 interface LazyImageProps extends Omit<ImageProps, 'source' | 'style'> {
   /** URL de la imagen completa */
@@ -63,9 +62,6 @@ export function LazyImage({
 
     // Función para cargar una imagen
     const loadImage = async (imageUri: string): Promise<void> => {
-      // 🧹 Registrar acceso en MediaCacheManager
-      await MediaCacheManager.trackImageAccess(imageUri);
-
       return new Promise<void>((resolve, reject) => {
         // Verificar si fue cancelado antes de empezar
         if (abortControllerRef.current?.signal.aborted) {
@@ -134,9 +130,6 @@ export function LazyImage({
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
-
-      // Remover del tracking (no del caché, solo del tracking activo)
-      // El MediaCacheManager se encargará de limpiar automáticamente
     };
   }, [uri, thumbnailUri]);
 

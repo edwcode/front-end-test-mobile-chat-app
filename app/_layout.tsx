@@ -7,7 +7,6 @@ import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { useMediaCleanup } from '@/hooks/useMediaCleanup';
 import { AppProvider, useIsLoggedIn } from '@/contexts/AppProvider';
 import { DrizzleStudioDevTool } from '@/database/DrizzleStudio';
 
@@ -38,12 +37,7 @@ function RootLayoutNav() {
   const isLoggedIn = useIsLoggedIn();
   const loading = false; // DatabaseProvider ya maneja loading state
 
-  // Limpieza automática de multimedia
-  useMediaCleanup({
-    cleanupIntervalMinutes: 15, // Cada 15 minutos
-    cleanOnBackground: true,     // Al pasar a background
-    checkHealth: true,           // Monitorear salud del caché
-  });
+  // ImageStorage se encarga automáticamente de la limpieza en segundo plano
 
   // Call the hook unconditionally
   useProtectedRoute(isLoggedIn, loading);

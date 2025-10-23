@@ -1,6 +1,5 @@
 import { chatRepository, MessageData, ChatData } from '../repositories/ChatRepository';
-import * as FileSystem from 'expo-file-system';
-import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
+import { ImageStorage } from '../utils/ImageStorage';
 
 export interface Message {
   id: string;
@@ -105,8 +104,14 @@ class ChatService {
     imageUri: string,
     caption: string = ''
   ): Promise<Message> {
-    // Comprimir y crear thumbnail
-    const { compressedUri, thumbnailUri } = await this.processImage(imageUri);
+    // Usar ImageStorage para procesar y guardar la imagen
+    const imageId = `${Date.now()}_${Math.random().toString(36).substring(7)}`;
+    const { uri: compressedUri, thumbnailUri } = await ImageStorage.saveImage(
+      chatId,
+      imageId,
+      imageUri,
+      caption
+    );
     
     const messageData = await chatRepository.createMessage({
       chatId,
@@ -118,81 +123,6 @@ class ChatService {
     });
     
     return this.mapMessageData(messageData);
-  }
-
-  /**
-   * Procesa una imagen: comprime y crea thumbnail con gestión optimizada de memoria
-   */
-  private async processImage(uri: string): Promise<{ compressedUri: string; thumbnailUri: string }> {
-    try {
-      // 1. Obtener información del archivo original
-      let fileInfo;
-      try {
-        fileInfo = await FileSystem.getInfoAsync(uri);
-      } catch (error) {
-        console.warn('No se pudo obtener info del archivo:', error);
-        fileInfo = null;
-      }
-
-      const originalSizeBytes = fileInfo && 'size' in fileInfo ? fileInfo.size : 0;
-      const originalSizeMB = originalSizeBytes / (1024 * 1024);
-
-      console.log(`Procesando imagen: ${originalSizeMB.toFixed(2)} MB`);
-
-      // 2. Determinar calidad de compresión según tamaño
-      let compressionQuality = 0.7;
-      let maxWidth = 1200;
-
-      if (originalSizeMB > 10) {
-        compressionQuality = 0.5;
-        maxWidth = 1000;
-        console.log('Imagen muy grande, aplicando compresión agresiva');
-      } else if (originalSizeMB > 5) {
-        compressionQuality = 0.6;
-        maxWidth = 1100;
-      } else if (originalSizeMB < 1) {
-        compressionQuality = 0.8;
-        maxWidth = 1200;
-      }
-
-      // 3. Crear versión comprimida
-      const compressed = await manipulateAsync(
-        uri,
-        [{ resize: { width: maxWidth } }],
-        { compress: compressionQuality, format: SaveFormat.JPEG }
-      );
-
-      // 4. Crear thumbnail
-      const thumbnail = await manipulateAsync(
-        uri,
-        [{ resize: { width: 200 } }],
-        { compress: 0.5, format: SaveFormat.JPEG }
-      );
-
-      // 5. Preparar directorios
-      const imagesDir = `${FileSystem.documentDirectory}images/`;
-      await FileSystem.makeDirectoryAsync(imagesDir, { intermediates: true });
-
-      // 6. Guardar archivos
-      const timestamp = Date.now();
-      const randomId = Math.random().toString(36).substring(7);
-      const compressedPath = `${imagesDir}img_${timestamp}_${randomId}.jpg`;
-      const thumbnailPath = `${imagesDir}thumb_${timestamp}_${randomId}.jpg`;
-
-      await FileSystem.moveAsync({ from: compressed.uri, to: compressedPath });
-      await FileSystem.moveAsync({ from: thumbnail.uri, to: thumbnailPath });
-
-      return {
-        compressedUri: compressedPath,
-        thumbnailUri: thumbnailPath,
-      };
-    } catch (error) {
-      console.error('Error procesando imagen:', error);
-      return {
-        compressedUri: uri,
-        thumbnailUri: uri,
-      };
-    }
   }
 
   /**

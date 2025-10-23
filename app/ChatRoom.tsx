@@ -45,22 +45,19 @@ export default function ChatRoomScreen() {
   const [hasMoreMessages, setHasMoreMessages] = useState(true);
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const hasMarkedAsReadRef = useRef(false); // Flag para marcar solo una vez
   const flashListRef = useRef<FlashList<Message>>(null);
   const router = useRouter();
 
-  // Escuchar eventos del teclado para ajuste dinámico
+  // Setup de listeners del teclado (OK: setup/cleanup necesario)
   useEffect(() => {
     const keyboardWillShow = Keyboard.addListener(
       Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
-      (e) => {
-        setKeyboardHeight(e.endCoordinates.height);
-      }
+      (e) => setKeyboardHeight(e.endCoordinates.height)
     );
     const keyboardWillHide = Keyboard.addListener(
       Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
-      () => {
-        setKeyboardHeight(0);
-      }
+      () => setKeyboardHeight(0)
     );
 
     return () => {
@@ -78,22 +75,18 @@ export default function ChatRoomScreen() {
     ? chatParticipants[0]?.name 
     : `${chatParticipants[0]?.name || 'Unknown'} & ${chatParticipants.length - 1} other${chatParticipants.length > 1 ? 's' : ''}`;
 
-  // Marcar mensajes como leídos cuando se abre el chat
-  useEffect(() => {
-    if (chat && currentUser) {
-      markAsRead?.(chat.id, currentUser.id);
-    }
-  }, [chat?.id, currentUser?.id]);
-
-  const handleSendMessage = useCallback(() => {
+  // Marcar como leído 
+  if (chat && currentUser && !hasMarkedAsReadRef.current) {
+    markAsRead(chat.id, currentUser.id);
+    hasMarkedAsReadRef.current = true;
+  }
+  const handleSendMessage = useCallback(async () => {
     if (messageText.trim() && currentUser && chat) {
-      sendMessage(chat.id, messageText.trim(), currentUser.id);
+      await sendMessage(chat.id, messageText.trim(), currentUser.id);
       setMessageText('');
       
-      // Con inverted={true} y mensajes nuevos al inicio, scrollToOffset(0) va al mensaje más nuevo (abajo)
-      setTimeout(() => {
-        flashListRef.current?.scrollToOffset({ offset: 0, animated: true });
-      }, 100);
+      // Scroll inmediato después de enviar
+      flashListRef.current?.scrollToOffset({ offset: 0, animated: true });
     }
   }, [messageText, currentUser, chat, sendMessage]);
 
@@ -166,10 +159,8 @@ export default function ChatRoomScreen() {
             text: 'Enviar',
             onPress: async (caption) => {
               await sendImageMessage(chat.id, currentUser.id, imageUri, caption || '');
-              // Scroll al último mensaje (offset 0 con inverted)
-              setTimeout(() => {
-                flashListRef.current?.scrollToOffset({ offset: 0, animated: true });
-              }, 100);
+              // Scroll inmediato después de enviar
+              flashListRef.current?.scrollToOffset({ offset: 0, animated: true });
             },
           },
         ],
@@ -177,14 +168,6 @@ export default function ChatRoomScreen() {
       );
     }
   }, [currentUser, chat, sendImageMessage]);
-
-  // Con inverted={true}, la lista muestra el primer elemento del array ABAJO (más nuevo)
-  // Esto hace que los mensajes nuevos aparezcan junto al input automáticamente
-  useEffect(() => {
-    if (chat && currentUser) {
-      markAsRead?.(chat.id, currentUser.id);
-    }
-  }, [chat?.id, currentUser?.id]);
 
   const renderMessage = useCallback(({ item }: { item: Message }) => (
     <MessageBubble
